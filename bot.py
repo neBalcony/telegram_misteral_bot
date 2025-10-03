@@ -1,6 +1,5 @@
 # bot.py — aiogram v3 + mistralai — inline с debounce
 import logging
-import os
 import asyncio
 from config import settings
 from aiogram import Bot, Dispatcher, F

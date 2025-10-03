@@ -3,7 +3,7 @@ from config import settings
 from aiogram.filters import BaseFilter
 
 class WhitelistFilter(BaseFilter):
-    admin_ids = settings.ADMIN_ID
+    admin_id = settings.ADMIN_ID
     """
     Фильтр, который разрешает выполнение хэндлера только если
     user_id или chat_id есть в белом списке. Админы всегда разрешены.
@@ -12,15 +12,13 @@ class WhitelistFilter(BaseFilter):
         pass
 
     async def __call__(self, obj) -> bool:
-        logging.warning(f"Checking access for user {obj.from_user.id}")
-        logging.warning(f"Admin {self.admin_ids}")
         """
         obj — может быть types.Message или types.InlineQuery (aiogram передаёт объект)
         возвращает True если доступ разрешён, False — если нет
         """
         # всегда разрешаем администраторам
         uid = obj.from_user.id
-        if uid in self.admin_ids:
+        if uid == self.admin_id:
             return True
         #TODO Add access for specific usernames
         if obj.from_user.username == "":

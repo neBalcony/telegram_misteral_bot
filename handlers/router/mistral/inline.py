@@ -47,7 +47,6 @@ async def inline_handler(inline_query: InlineQuery):
         await inline_query.answer([result])
         return
     qst_id[id_str] = query_text 
-    logging.warning(f"Stored question for uuid {id_str}: {query_text}")
     kb = InlineKeyboardMarkup(inline_keyboard = [
         [
             InlineKeyboardButton(text="Получит ответ",callback_data=QstData(qst_uuid=id_str).pack())
@@ -60,7 +59,7 @@ async def inline_handler(inline_query: InlineQuery):
         reply_markup=kb
     )
 
-    await inline_query.answer([result],cache_time=1)
+    await inline_query.answer([result],cache_time=0)
 
 
 def get_inline_kb_retry(data):
@@ -99,7 +98,12 @@ async def callback_edit_handler(callback: CallbackQuery, bot: Bot):
         if inline_id:
             # редактируем по inline_message_id
             # bot.edit_message_text(inline_id, text="Сообщение изменено")
-            await bot.edit_message_text(inline_message_id=inline_id, text="Запрашиваю ответ у модели\\.\\.\\. ⏳")
+            try:
+                await bot.edit_message_text(inline_message_id=inline_id, text="Запрашиваю ответ у модели\\.\\.\\. ⏳")
+            except Exception as e:
+                logging.error(f"Error editing message: {e} try again")
+                await bot.edit_message_text(inline_message_id=inline_id, text="Запрашиваю ответ у модели\\.\\.\\. ⏳")
+                
 
             mistral_msg = []
             mistral_msg.append({"role": "user", "content": question})
@@ -160,14 +164,12 @@ async def callback_edit_handler(callback: CallbackQuery, bot: Bot):
     except Exception as e:
         logging.error(f"Unexpected error in callback handler: {e}")
         try:
-            await callback.answer("⚠ Ошибка при обработке запроса", show_alert=True)
             if callback.inline_message_id:
                 await bot.edit_message_text(
                     inline_message_id=callback.inline_message_id,
                     text="⚠ Ошибка при обработке запроса",
                     parse_mode=None
                 )
-            raise e
 
         except Exception as e2:
             logging.error(f"Failed to notify user about error: {e2}")

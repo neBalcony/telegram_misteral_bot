@@ -7,7 +7,7 @@ utls_router = utls.prepare_router()
 
 handlers_router = Router()
 
+handlers_router.include_router(inline_command.router)
 handlers_router.include_router(mistral_router)
 handlers_router.include_router(utls_router)
 handlers_router.include_router(base_command.router)
-handlers_router.include_router(inline_command.router)

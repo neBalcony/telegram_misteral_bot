@@ -1,4 +1,3 @@
-import logging
 from config import settings
 from aiogram.filters import BaseFilter
 

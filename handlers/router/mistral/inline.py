@@ -18,9 +18,9 @@ from config import settings
 
 
 MISTRAL_MODEL = settings.MISTRAL_MODEL
-qst_id: Dict[str, str] = {}  # keys are strings now
+qst_id: Dict[str, str] = {}  # keys are strings now # TODO: use REDIS
 
-class QstData(CallbackData, prefix="qst_"):
+class QstData(CallbackData, prefix="qst_"): #TODO: move to separate file
     qst_uuid: str
 
 router = Router()
@@ -73,6 +73,7 @@ def get_inline_kb_retry(data):
         ]
     ]
     )
+    return keyboard
 
 
 #TODO: REFACTOR

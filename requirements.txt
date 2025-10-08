@@ -2,3 +2,4 @@ aiogram
 mistralai 
 telegramify-markdown
 pydantic-settings
+sqlalchemy

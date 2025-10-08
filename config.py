@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str
     MISTRAL_MODEL: str = "mistral-large-latest"
     ADMIN_ID: int
+    DATABASE_URL:str = "sqlite:///./telegram_base.db"
 
     model_config = SettingsConfigDict(
         env_file=".env",

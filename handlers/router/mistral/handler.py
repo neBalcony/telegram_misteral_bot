@@ -1,12 +1,15 @@
 import asyncio
-from aiogram import types
+from aiogram import Router, types
 from client.MistralClient import MistralClient
 from aiogram.exceptions import TelegramBadRequest
 import telegramify_markdown
 from config import settings
+from filters import WhitelistFilter
 
 #instruction
+router = Router()
 
+@router.message(WhitelistFilter())
 async def handle_text(message: types.Message):
     #TODO: Сделать DI
     mistral = MistralClient.get_mistral()

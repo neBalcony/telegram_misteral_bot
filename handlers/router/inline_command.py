@@ -3,9 +3,9 @@ from aiogram.types import (
     InlineQueryResultArticle, InputTextMessageContent,
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 )
-from filters.WhitelistFilter import WhitelistFilter
-from filters.AdminFilter import AdminFilter
-from filters.InlineCommand import InlineCommand
+from filters import WhitelistFilter
+from filters import AdminFilter
+from filters import InlineCommand
 router = Router()
 
 @router.inline_query(InlineCommand(commands=["/start", "/help"]))

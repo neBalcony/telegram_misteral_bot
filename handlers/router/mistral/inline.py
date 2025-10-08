@@ -12,8 +12,8 @@ from aiogram.types import (
 )
 from mistralai.models import SDKError
 from client.MistralClient import MistralClient
-from filters.WhitelistFilter import WhitelistFilter
-from filters.InlineCommand import InlineCommand
+from filters import WhitelistFilter
+from filters import InlineCommand
 from config import settings
 
 

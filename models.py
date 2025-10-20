@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Enum
+from sqlalchemy import Enum, String
 from enum import Enum as PyEnum
  
 class Base(DeclarativeBase):
@@ -11,10 +11,19 @@ class UserRole(PyEnum):
 
 class User(Base):
     __tablename__ = "User" 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String, nullable=True)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, validate_strings=True), 
                                            default=UserRole.user, 
                                            nullable=False)
     
     def __repr__(self):
         return f"uid:{self.id}, role:{self.role}"
+    
+class Invite(Base):
+    __tablename__ = "Invite"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(String ,nullable=False)
+    
+    def __repr__(self):
+        return f"Invited {self.username}"

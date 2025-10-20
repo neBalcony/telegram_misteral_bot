@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from config import settings
-from models import Base, User
+from models import Base, User, Invite
 
 
 def init_db():

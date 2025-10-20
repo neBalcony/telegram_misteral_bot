@@ -1,8 +1,10 @@
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram import Router
 from aiogram import types
 from aiogram.utils.formatting import Text
 from aiogram import types
+
+from filters import AdminFilter
 
 
 router = Router()
@@ -10,7 +12,17 @@ router = Router()
 
 
 
-
+@router.message(Command("invite"),AdminFilter())
+async def invite_username(message, command: CommandObject):
+    
+    args = command.args
+    if "@" in args:
+        args = args.replace("@","")
+    if len(args.split(" "))>1:
+        pass
+    
+    await message.reply(message)
+    
 @router.message(CommandStart())
 async def start(message: types.Message):
     text = (
@@ -36,3 +48,5 @@ async def help(message: types.Message):
     content = Text(text) 
     
     await message.reply(**content.as_kwargs())
+
+

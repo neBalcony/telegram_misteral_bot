@@ -35,6 +35,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 from handlers.main import handlers_router
+from middelware import UpdateUserMiddleware
 
 
 
@@ -47,6 +48,7 @@ async def main() -> None:
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
+    dp.update.middleware(UpdateUserMiddleware())
 # Register routs
     dp.include_router(handlers_router)
     

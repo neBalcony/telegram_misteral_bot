@@ -1,5 +1,4 @@
 from aiogram import Router
-from filters import WhitelistFilter
 from . import handler, inline
 
 mistral_router = Router()

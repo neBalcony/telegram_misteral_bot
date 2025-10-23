@@ -1,10 +1,14 @@
 import asyncio
 from aiogram import Router, types
+from mistralai import SystemMessage, UserMessage
 from client.MistralClient import MistralClient
 from aiogram.exceptions import TelegramBadRequest
 import telegramify_markdown
 from config import settings
 from filters import WhitelistFilter
+from db import SessionLocal
+from sqlalchemy.sql import select
+from models import User
 
 #instruction
 router = Router()
@@ -14,12 +18,15 @@ async def handle_text(message: types.Message):
     #TODO: Сделать DI
     mistral = MistralClient.get_mistral()
     MISTRAL_MODEL = settings.MISTRAL_MODEL
-    
-    
+    with SessionLocal() as session:
+        user = session.execute(select(User).where(User.id == message.from_user.id)).scalars().first()
+        
+        if user:
+            default_request = user.default_request
     # не обрабатываем команды здесь
     if message.text and message.text.startswith("/"):
-        return
-
+        pass
+    #TODO: !
     user_text = (message.text or "").strip()
     if not user_text:
         await message.reply("Похоже, пустое сообщение. Попробуйте ещё раз.")
@@ -28,10 +35,9 @@ async def handle_text(message: types.Message):
 
     sending = await message.reply("Отправляю запрос в модель\\.\\.\\. ⏳")
     mistral_msg = []
-    mistral_msg.append({                     
-            "role": "user",
-            "content": user_text,
-        })
+    if default_request:
+        mistral_msg.append(SystemMessage(content=default_request))
+    mistral_msg.append(UserMessage(content=user_text))
     
     try:
         def call_mistral():
@@ -62,8 +68,8 @@ async def handle_text(message: types.Message):
             error_text=f"Ошибка при форматирований {str (e)}\nОтвет модели:\n{converted}"
             await sending.edit_text(error_text,parse_mode=None)
         else:
-            await sending.edit_text(f"Ошибка Telegram: {e}",)
+            await sending.edit_text(f"Ошибка Telegram: {e}", parse_mode=None)
 
     except Exception as e:
-        await sending.edit_text(f"Ошибка при запросе к Mistral: {e}",)
+        await sending.edit_text(f"Ошибка при запросе к Mistral: {e}", parse_mode=None)
         

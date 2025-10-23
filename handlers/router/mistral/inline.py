@@ -2,6 +2,8 @@ import asyncio
 import logging
 from typing import Dict
 from uuid import uuid4
+from mistralai import SystemMessage, UserMessage
+from sqlalchemy import select
 import telegramify_markdown
 from telegramify_markdown import ContentTypes, InterpreterChain, TextInterpreter
 from aiogram.filters.callback_data import CallbackData
@@ -12,9 +14,11 @@ from aiogram.types import (
 )
 from mistralai.models import SDKError
 from client.MistralClient import MistralClient
+from db import SessionLocal
 from filters import WhitelistFilter
 from filters import InlineCommand
 from config import settings
+from models import User
 
 
 MISTRAL_MODEL = settings.MISTRAL_MODEL
@@ -105,9 +109,13 @@ async def callback_edit_handler(callback: CallbackQuery, bot: Bot):
                 logging.error(f"Error editing message: {e} try again")
                 await bot.edit_message_text(inline_message_id=inline_id, text="Запрашиваю ответ у модели\\.\\.\\. ⏳")
                 
-
+            with SessionLocal() as session:
+                user = session.execute(select(User).where(User.id == callback.from_user.id)).scalars().first()
+                default_request = user.default_request
             mistral_msg = []
-            mistral_msg.append({"role": "user", "content": question})
+            if default_request:
+                mistral_msg.append(SystemMessage(content=default_request))
+            mistral_msg.append(UserMessage(content=question))
 
             
             mistral = MistralClient.get_mistral()

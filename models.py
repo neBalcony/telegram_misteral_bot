@@ -16,14 +16,14 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, validate_strings=True), 
                                            default=UserRole.user, 
                                            nullable=False)
+    default_request: Mapped[str] = mapped_column(String, nullable=True, default=None)
     
     def __repr__(self):
         return f"uid:{self.id}, role:{self.role}"
     
 class Invite(Base):
     __tablename__ = "Invite"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    username: Mapped[str] = mapped_column(String ,nullable=False)
+    username: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
     
     def __repr__(self):
         return f"Invited {self.username}"

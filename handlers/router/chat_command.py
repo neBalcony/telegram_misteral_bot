@@ -6,8 +6,8 @@ from aiogram import types
 from sqlalchemy import select
 
 from db import SessionLocal
-from models import Invite
-from filters import AdminFilter
+from models import Invite, User
+from filters import AdminFilter, WhitelistFilter
 
 
 router = Router()
@@ -46,6 +46,51 @@ async def invite_username(message, command: CommandObject):
         session.commit()
 
     await message.reply(f"Ползователь @{args} приглашен", parse_mode=None)
+    
+@router.message(Command("set"), WhitelistFilter())
+async def set_default(message, command: CommandObject):
+    args = command.args
+    if not args:
+        await message.reply(
+            "Тут нету инструкций для меня 🫠\nДолжно быть */set <Инструкция>*\n\nПример\n*/set Разгаваривай с акцентом и говори кратко*", parse_mode="Markdown"
+        )
+        return
+
+    args = args.strip()
+    if len(args) < 3:
+        await message.reply(
+            "Ты хочешь сказать что твоя инструкция менше чем 3 символа❔❔❔\nНу окей", parse_mode=None
+        )
+    with SessionLocal() as session:
+        user = (
+            session.execute(select(User).where(User.id == message.from_user.id))
+            .scalars()
+            .first()
+        )
+
+        user.default_request = args
+        session.commit()
+
+    await message.reply(f"Теперь я буду помнить о инструкций\n{args} ", parse_mode=None)
+    
+@router.message(Command("unset"), WhitelistFilter())
+async def set_default(message, command: CommandObject):
+    args = command.args
+    if  args:
+        await message.reply(
+            "Странно что ты написал аргументы к команде 🫠", parse_mode="Markdown"
+        )
+    with SessionLocal() as session:
+        user = (
+            session.execute(select(User).where(User.id == message.from_user.id))
+            .scalars()
+            .first()
+        )
+
+        user.default_request = None
+        session.commit()
+
+    await message.reply(f"Теперь я не буду помнить о инструкций ☹️", parse_mode=None)
 
 
 @router.message(CommandStart())
@@ -68,7 +113,9 @@ async def help(message: types.Message):
         "Вы можете писать мне в личку или использовать меня в inline-режиме — введите @<мой_ник> в любом чате.\n"
         "Команды:\n"
         "/start — приветственное сообщение\n"
-        "/help — это сообщение"
+        "/help — это сообщение\n"
+        "/set — это команда для устоновления инструкций по умолчаний\n"
+        "/unset — это команда для сброса инструкций"
     )
     content = Text(text) 
     

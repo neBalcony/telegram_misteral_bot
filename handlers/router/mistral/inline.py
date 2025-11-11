@@ -3,6 +3,7 @@ import logging
 from typing import Dict
 from uuid import uuid4
 from mistralai import SystemMessage, UserMessage
+import redis
 from sqlalchemy import select
 import telegramify_markdown
 from telegramify_markdown import ContentTypes, InterpreterChain, TextInterpreter
@@ -20,9 +21,7 @@ from filters import InlineCommand
 from config import settings
 from models import User
 
-
 MISTRAL_MODEL = settings.MISTRAL_MODEL
-qst_id: Dict[str, str] = {}  # keys are strings now # TODO: use REDIS
 
 class QstData(CallbackData, prefix="qst_"): #TODO: move to separate file
     qst_uuid: str
@@ -50,7 +49,10 @@ async def inline_handler(inline_query: InlineQuery):
         )
         await inline_query.answer([result])
         return
-    qst_id[id_str] = query_text 
+    r_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    ONE_WEEK = 60*60*24*7
+    r_client.set(id_str, query_text, ex=ONE_WEEK)
+    r_client.close()
     kb = InlineKeyboardMarkup(inline_keyboard = [
         [
             InlineKeyboardButton(text="Получит ответ",callback_data=QstData(qst_uuid=id_str).pack())
@@ -84,10 +86,11 @@ def get_inline_kb_retry(data):
 @router.callback_query(QstData.filter())
 async def callback_edit_handler(callback: CallbackQuery, bot: Bot):
     try:
-            
         # Подтверждаем нажатие (чтобы пользователь видел ответ)
         uuid = QstData.unpack(callback.data).qst_uuid
-        question = qst_id.get(uuid)
+        r_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
+        question = r_client.get(uuid)
+        r_client.close()
         if question is None:
             logging.warning("Question for uuid %s not found (maybe already processed or expired)", uuid)
             # дружелюбно сообщаем пользователю

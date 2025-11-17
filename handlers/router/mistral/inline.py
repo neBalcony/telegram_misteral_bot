@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from typing import Dict
 from uuid import uuid4
 from mistralai import SystemMessage, UserMessage
 import redis
@@ -8,7 +7,7 @@ from sqlalchemy import select
 import telegramify_markdown
 from telegramify_markdown import ContentTypes, InterpreterChain, TextInterpreter
 from aiogram.filters.callback_data import CallbackData
-from aiogram import Bot, Router, types
+from aiogram import Bot, Router
 from aiogram.types import (
     InlineQuery, InlineQueryResultArticle, InputTextMessageContent,
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
@@ -17,7 +16,6 @@ from mistralai.models import SDKError
 from client.MistralClient import MistralClient
 from db import SessionLocal
 from filters import WhitelistFilter
-from filters import InlineCommand
 from config import settings
 from models import User
 

@@ -5,7 +5,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     MISTRAL_API_KEY: str
     TELEGRAM_BOT_TOKEN: str
-    MISTRAL_MODEL: str = "mistral-large-latest"
+    MISTRAL_MODEL: str = "open-mixtral-8x7b"
+    MISTRAL_TIMEOUT: float = 5
     ADMIN_ID: int
     DATABASE_URL:str = "sqlite:///./telegram_base.db"
 

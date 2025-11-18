@@ -119,12 +119,9 @@ async def callback_edit_handler(callback: CallbackQuery, bot: Bot):
             mistral_msg.append(UserMessage(content=question))
 
             
-            mistral = MistralClient.get_mistral()
-            def call_mistral():
-                return mistral.chat.complete(model=MISTRAL_MODEL, messages=mistral_msg)
             try:
-
-                resp = await asyncio.to_thread(call_mistral)
+                async with MistralClient() as mistral:
+                    resp = await mistral.chat.complete_async( model=MISTRAL_MODEL, messages=mistral_msg)
             except SDKError as e:
                 logging.error(f"Error calling Mistral API: {e}")
 

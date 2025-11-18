@@ -15,23 +15,14 @@ router = Router()
 
 @router.message(WhitelistFilter())
 async def handle_text(message: types.Message):
-    #TODO: Сделать DI
-    mistral = MistralClient.get_mistral()
-    MISTRAL_MODEL = settings.MISTRAL_MODEL
     with SessionLocal() as session:
         user = session.execute(select(User).where(User.id == message.from_user.id)).scalars().first()
-        
         if user:
             default_request = user.default_request
-    # не обрабатываем команды здесь
-    if message.text and message.text.startswith("/"):
-        pass
-    #TODO: !
     user_text = (message.text or "").strip()
     if not user_text:
         await message.reply("Похоже, пустое сообщение. Попробуйте ещё раз.")
         return
-
 
     sending = await message.reply("Отправляю запрос в модель\\.\\.\\. ⏳")
     mistral_msg = []
@@ -40,13 +31,10 @@ async def handle_text(message: types.Message):
     mistral_msg.append(UserMessage(content=user_text))
     
     try:
-        def call_mistral():
-            return mistral.chat.complete(
-                model=MISTRAL_MODEL,
-                messages=mistral_msg)
-
-        resp = await asyncio.to_thread(call_mistral)
-
+        MISTRAL_MODEL = settings.MISTRAL_MODEL
+        async with MistralClient() as mistral:
+            resp = await mistral.chat.complete_async( model=MISTRAL_MODEL, messages=mistral_msg)
+            
         assistant_text = ""
         try:
             assistant_text = resp.choices[0].message.content
